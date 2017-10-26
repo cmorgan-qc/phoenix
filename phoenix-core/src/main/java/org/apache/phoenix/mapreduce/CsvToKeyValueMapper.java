@@ -55,6 +55,9 @@ public class CsvToKeyValueMapper extends FormatToBytesWritableMapper<CSVRecord> 
     /** Configuration key for the array element delimiter for input arrays */
     public static final String ARRAY_DELIMITER_CONFKEY = "phoenix.mapreduce.import.arraydelimiter";
 
+    /** Configuration key for the header string for use in skipping header rows */
+    public static final String HEADER_STRING_CONFKEY = "phoenix.mapreduce.import.headerstring";
+
     private CsvLineParser lineParser;
 
     @Override
@@ -69,7 +72,8 @@ public class CsvToKeyValueMapper extends FormatToBytesWritableMapper<CSVRecord> 
         lineParser = new CsvLineParser(
                 CsvBulkImportUtil.getCharacter(conf, FIELD_DELIMITER_CONFKEY),
                 CsvBulkImportUtil.getCharacter(conf, QUOTE_CHAR_CONFKEY),
-                CsvBulkImportUtil.getCharacter(conf, ESCAPE_CHAR_CONFKEY));
+                CsvBulkImportUtil.getCharacter(conf, ESCAPE_CHAR_CONFKEY),
+                conf.get(HEADER_STRING_CONFKEY));
     }
 
     @VisibleForTesting
@@ -91,17 +95,22 @@ public class CsvToKeyValueMapper extends FormatToBytesWritableMapper<CSVRecord> 
     @VisibleForTesting
     static class CsvLineParser implements LineParser<CSVRecord> {
         private final CSVFormat csvFormat;
+        private final String headerString;
 
-        CsvLineParser(char fieldDelimiter, char quote, char escape) {
+        CsvLineParser(char fieldDelimiter, char quote, char escape, String headerString) {
             this.csvFormat = CSVFormat.DEFAULT
                     .withIgnoreEmptyLines(true)
                     .withDelimiter(fieldDelimiter)
                     .withEscape(escape)
                     .withQuote(quote);
+            this.headerString = headerString;
         }
 
-        @Override
-        public CSVRecord parse(String input) throws IOException {
+        @Override public CSVRecord parse(String input) throws IOException {
+            // Skip rows that match the header
+            if (headerString != null && headerString.equals(input)) {
+                return null;
+            }
             // TODO Creating a new parser for each line seems terribly inefficient but
             // there's no public way to parse single lines via commons-csv. We should update
             // it to create a LineParser class like this one.

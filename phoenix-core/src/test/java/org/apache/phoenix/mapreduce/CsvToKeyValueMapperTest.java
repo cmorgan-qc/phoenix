@@ -17,20 +17,21 @@
  */
 package org.apache.phoenix.mapreduce;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class CsvToKeyValueMapperTest {
 
     @Test
     public void testCsvLineParser() throws IOException {
         CsvToKeyValueMapper.CsvLineParser lineParser =
-                new CsvToKeyValueMapper.CsvLineParser(';', '"', '\\');
+                new CsvToKeyValueMapper.CsvLineParser(';', '"', '\\', null);
         CSVRecord parsed = lineParser.parse("one;two");
 
         assertEquals("one", parsed.get(0));
@@ -42,11 +43,27 @@ public class CsvToKeyValueMapperTest {
     @Test
     public void testCsvLineParserWithQuoting() throws IOException {
         CsvToKeyValueMapper.CsvLineParser lineParser =
-                new CsvToKeyValueMapper.CsvLineParser(';', '"', '\\');
+                new CsvToKeyValueMapper.CsvLineParser(';', '"', '\\', null);
         CSVRecord parsed = lineParser.parse("\"\\\"one\";\"\\;two\\\\\"");
 
         assertEquals("\"one", parsed.get(0));
         assertEquals(";two\\", parsed.get(1));
+        assertTrue(parsed.isConsistent());
+        assertEquals(1, parsed.getRecordNumber());
+    }
+
+    @Test
+    public void testCsvLineParserSkipHeader() throws IOException {
+        CsvToKeyValueMapper.CsvLineParser
+                lineParser =
+                new CsvToKeyValueMapper.CsvLineParser(';', '"', '\\', "col1;col2");
+        CSVRecord parsedHeader = lineParser.parse("col1;col2");
+        assertNull(parsedHeader);
+
+        CSVRecord parsed = lineParser.parse("col1_notheader;col2");
+
+        assertEquals("col1_notheader", parsed.get(0));
+        assertEquals("col2", parsed.get(1));
         assertTrue(parsed.isConsistent());
         assertEquals(1, parsed.getRecordNumber());
     }

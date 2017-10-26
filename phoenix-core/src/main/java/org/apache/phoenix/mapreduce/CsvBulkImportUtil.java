@@ -39,10 +39,11 @@ public class CsvBulkImportUtil {
      * @param quoteChar quote character for the CSV input
      * @param escapeChar escape character for the CSV input
      * @param arrayDelimiter array delimiter character, can be null
-     * @param binaryEncoding 
+     * @param binaryEncoding
+     * @param headerString string representing the header row that should be skipped, can be null
      */
     public static void initCsvImportJob(Configuration conf, char fieldDelimiter, char quoteChar,
-            char escapeChar, String arrayDelimiter, String binaryEncoding) {
+            char escapeChar, String arrayDelimiter, String binaryEncoding, String headerString) {
         setChar(conf, CsvToKeyValueMapper.FIELD_DELIMITER_CONFKEY, fieldDelimiter);
         setChar(conf, CsvToKeyValueMapper.QUOTE_CHAR_CONFKEY, quoteChar);
         setChar(conf, CsvToKeyValueMapper.ESCAPE_CHAR_CONFKEY, escapeChar);
@@ -51,6 +52,9 @@ public class CsvBulkImportUtil {
         }
         if(binaryEncoding!=null){
             conf.set(QueryServices.UPLOAD_BINARY_DATA_TYPE_ENCODING, binaryEncoding);
+        }
+        if (headerString != null) {
+            conf.set(CsvToKeyValueMapper.HEADER_STRING_CONFKEY, headerString);
         }
     }
 

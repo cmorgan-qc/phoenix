@@ -41,7 +41,7 @@ public class CsvBulkImportUtilTest {
         char quote = '\002';
         char escape = '!';
 
-        CsvBulkImportUtil.initCsvImportJob(conf, delimiter, quote, escape, null, null);
+        CsvBulkImportUtil.initCsvImportJob(conf, delimiter, quote, escape, null, null, null);
 
         // Serialize and deserialize the config to ensure that there aren't any issues
         // with non-printable characters as delimiters
@@ -59,6 +59,7 @@ public class CsvBulkImportUtilTest {
         assertEquals(Character.valueOf('!'),
                 CsvBulkImportUtil.getCharacter(deserialized, CsvToKeyValueMapper.ESCAPE_CHAR_CONFKEY));
         assertNull(deserialized.get(CsvToKeyValueMapper.ARRAY_DELIMITER_CONFKEY));
+        assertNull(deserialized.get(CsvToKeyValueMapper.HEADER_STRING_CONFKEY));
 
         tempFile.delete();
     }

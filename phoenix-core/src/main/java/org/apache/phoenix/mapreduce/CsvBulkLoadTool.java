@@ -36,6 +36,7 @@ public class CsvBulkLoadTool extends AbstractBulkLoadTool {
     static final Option ESCAPE_OPT = new Option("e", "escape", true, "Supply a custom escape character, default is a backslash");
     static final Option ARRAY_DELIMITER_OPT = new Option("a", "array-delimiter", true, "Array element delimiter (optional)");
     static final Option binaryEncodingOption = new Option("b", "binaryEncoding", true, "Specifies binary encoding");
+    static final Option headerStringOption = new Option("hs", "headerString", true, "Specifies a header string to skip (optional)");
 
     @Override
     protected Options getOptions() {
@@ -45,6 +46,7 @@ public class CsvBulkLoadTool extends AbstractBulkLoadTool {
         options.addOption(ESCAPE_OPT);
         options.addOption(ARRAY_DELIMITER_OPT);
         options.addOption(binaryEncodingOption);
+        options.addOption(headerStringOption);
         return options;
     }
 
@@ -86,14 +88,20 @@ public class CsvBulkLoadTool extends AbstractBulkLoadTool {
         if (cmdLine.hasOption(binaryEncodingOption.getOpt())) {
             binaryEncoding = cmdLine.getOptionValue(binaryEncodingOption.getOpt());
         }
-        
+
+        String headerString = null;
+        if (cmdLine.hasOption(headerStringOption.getOpt())) {
+            headerString = cmdLine.getOptionValue(headerStringOption.getOpt());
+        }
+
         CsvBulkImportUtil.initCsvImportJob(
                 conf,
                 delimiterChar,
                 quoteChar,
                 escapeChar,
                 cmdLine.getOptionValue(ARRAY_DELIMITER_OPT.getOpt()),
-                binaryEncoding);
+                binaryEncoding,
+                headerString);
     }
 
     @Override

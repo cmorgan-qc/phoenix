@@ -135,6 +135,7 @@ public class CsvBulkLoadToolIT extends BaseOwnClusterIT {
         FileSystem fs = FileSystem.get(getUtility().getConfiguration());
         FSDataOutputStream outputStream = fs.create(new Path("/tmp/input2.csv"));
         PrintWriter printWriter = new PrintWriter(outputStream);
+        printWriter.println("id|names");
         printWriter.println("1|Name 1a;Name 1b");
         printWriter.println("2|Name 2a;Name 2b");
         printWriter.close();
@@ -147,7 +148,8 @@ public class CsvBulkLoadToolIT extends BaseOwnClusterIT {
                 "--zookeeper", zkQuorum,
                 "--delimiter", "|",
                 "--array-delimiter", ";",
-                "--import-columns", "ID,NAMES"});
+                "--import-columns", "ID,NAMES",
+                "--headerString", "id|names" });
         assertEquals(0, exitCode);
 
         ResultSet rs = stmt.executeQuery("SELECT id, names FROM table2 ORDER BY id");
